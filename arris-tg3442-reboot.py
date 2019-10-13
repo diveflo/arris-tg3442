@@ -63,11 +63,11 @@ def login(session, url, username, password):
         data=json.dumps(login_data)
     )
 
-    result = json.loads(r.text)
-
-    if result['p_status'] == "Fail":
+    if not r.ok or json.loads(r.text)['p_status'] == "Fail":
         print("login failure", file=sys.stderr)
         exit(-1)
+
+    result = json.loads(r.text)
 
     csrf_nonce = result['nonce']
 
