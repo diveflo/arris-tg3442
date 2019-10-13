@@ -14,6 +14,11 @@ def getOptions(args=sys.argv[1:]):
     parser.add_argument("-u", "--username", help="router login username", action='store', dest='username', default='admin')
     parser.add_argument("-p", "--password", help="router login password", action='store', dest='password', default='password')
     parser.add_argument("-t", "--target", help="router IP address/url (prepended by http)", action='store', dest='url', default='http://192.168.100.1')
+
+    if (len(args) == 0):
+        parser.print_help()
+        if not input("\n\nDo you want to run using default user, password and router IP? (y/n): ").lower().strip()[:1] == "y": sys.exit(1)
+
     options = parser.parse_args(args)
     return options
 
