@@ -18,15 +18,11 @@ def getOptions(args=sys.argv[1:]):
     return options
 
 def login(session, url, username, password):
-    """login to """
-    # get login page
     r = session.get(f"{url}")
     # parse HTML
     h = BeautifulSoup(r.text, "lxml")
-    # get session id from javascript in head
     current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", h.head.text)[1]
 
-    # encrypt password
     salt = os.urandom(8)
     iv = os.urandom(8)
     key = hashlib.pbkdf2_hmac(
@@ -39,15 +35,12 @@ def login(session, url, username, password):
     secret = { "Password": password, "Nonce": current_session_id }
     plaintext = bytes(json.dumps(secret).encode("ascii"))
     associated_data = "loginPassword"
-    # initialize cipher
+
     cipher = AES.new(key, AES.MODE_CCM, iv)
-    # set associated data
     cipher.update(bytes(associated_data.encode("ascii")))
-    # encrypt plaintext
     encrypt_data = cipher.encrypt(plaintext)
-    # append digest
     encrypt_data += cipher.digest()
-    # return
+
     login_data = {
         'EncryptData': binascii.hexlify(encrypt_data).decode("ascii"),
         'Name': username,
@@ -56,7 +49,6 @@ def login(session, url, username, password):
         'AuthData': associated_data
     }
 
-    # login
     r = session.put(
         f"{url}/php/ajaxSet_Password.php",
         headers={
@@ -66,23 +58,21 @@ def login(session, url, username, password):
         data=json.dumps(login_data)
     )
 
-    # parse result
     result = json.loads(r.text)
-    # success?
+
     if result['p_status'] == "Fail":
         print("login failure", file=sys.stderr)
         exit(-1)
-    # remember CSRF nonce
+
     csrf_nonce = result['nonce']
 
-    # prepare headers
     session.headers.update({
         "X-Requested-With": "XMLHttpRequest",
         "csrfNonce": csrf_nonce,
         "Origin": f"{url}/",
         "Referer": f"{url}/"
     })
-    # set credentials cookie
+
     session.cookies.set(
         "credential",
         "eyAidW5pcXVlIjoiMjgwb2FQU0xpRiIsICJmYW1pbHkiOiI4NTIiLCAibW9kZWxuYW1lIjoiV"
@@ -91,7 +81,6 @@ def login(session, url, username, password):
         "hbmdlZCI6IllFUyIgfQ=="
     )
 
-    # set session
     r = session.post(f"{url}/php/ajaxSet_Session.php")
 
 def restart(session):
@@ -99,7 +88,6 @@ def restart(session):
 
     r2 = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
 
-# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     userArguments = getOptions()
 
