@@ -27,9 +27,15 @@ def login(session, url, username, password):
     # parse HTML
     h = BeautifulSoup(r.text, "lxml")
     current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", h.head.text)[1]
+    their_salt = re.search(r".*var mySalt = '(.+)';.*", h.head.text)[1]
+    their_iv = re.search(r".*var myIv = '(.+)';.*", h.head.text)[1]
 
     salt = os.urandom(8)
     iv = os.urandom(8)
+
+    salt = bytes.fromhex(their_salt)
+    iv = bytes.fromhex(their_iv)
+
     key = hashlib.pbkdf2_hmac(
         'sha256',
         bytes(password.encode("ascii")),
@@ -49,8 +55,8 @@ def login(session, url, username, password):
     login_data = {
         'EncryptData': binascii.hexlify(encrypt_data).decode("ascii"),
         'Name': username,
-        'Salt': binascii.hexlify(salt).decode("ascii"),
-        'Iv': binascii.hexlify(iv).decode("ascii"),
+        # 'Salt': binascii.hexlify(salt).decode("ascii"),
+        # 'Iv': binascii.hexlify(iv).decode("ascii"),
         'AuthData': associated_data
     }
 
@@ -69,7 +75,12 @@ def login(session, url, username, password):
 
     result = json.loads(r.text)
 
-    csrf_nonce = result['nonce']
+    decCipher = AES.new(key, AES.MODE_CCM, iv)
+    decCipher.update(bytes("nonce".encode()))
+    decryptData = decCipher.decrypt(bytes.fromhex(result['encryptData'])) #TODO ende abschneiden
+
+
+    csrf_nonce = decryptData[:32].decode()
 
     session.headers.update({
         "X-Requested-With": "XMLHttpRequest",
@@ -88,11 +99,15 @@ def login(session, url, username, password):
 
     r = session.post(f"{url}/php/ajaxSet_Session.php")
 
+def _unpad(s):
+    return s[:-ord(s[len(s) - 1:])]
+
 def restart(session):
     restart_request_data = {"RestartReset":"Restart"}
 
     r2 = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
 
+print( __name__ )
 if __name__ == "__main__":
     userArguments = getOptions()
 
