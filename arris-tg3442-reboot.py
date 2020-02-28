@@ -107,7 +107,6 @@ def restart(session):
 
     r2 = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
 
-print( __name__ )
 if __name__ == "__main__":
     userArguments = getOptions()
 
