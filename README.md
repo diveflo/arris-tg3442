@@ -22,7 +22,10 @@ This will use **default** username, password and router IP.
 Use `--help` to learn how to use non-default values.
 
 ## Docker
-You can also use the provided `Dockerfile` to build and run this tool. For some architectures, an image is also available pre-build from [dockerhub](https://hub.docker.com/r/floriang89/arris-tg3442-reboot/tags).
+You can also use the provided `Dockerfile` to build and run this tool. A pre-built image is also available on [dockerhub](https://hub.docker.com/r/floriang89/arris-tg3442-reboot/tags) for these processor architectures:
+ * amd64
+ * arm64
+ * arm/v7
 
 ## Thanks
 Most of the heavy-lifiting was already done over in the [MUNIN monitoring tool repo](https://github.com/munin-monitoring/contrib/blob/master/plugins/router/arris-tg3442), especially regarding login.
