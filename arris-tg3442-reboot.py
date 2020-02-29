@@ -1,4 +1,5 @@
-import binascii
+from firmware import get_firmware_handler
+
 from bs4 import BeautifulSoup
 from Crypto.Cipher import AES
 import hashlib
@@ -7,7 +8,7 @@ import re
 import requests
 import sys
 import argparse
-import os
+
 
 def getOptions(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Reboot Arris TG3442* cable router remotely.")
@@ -17,24 +18,23 @@ def getOptions(args=sys.argv[1:]):
 
     if (len(args) == 0):
         parser.print_help()
-        if not input("\n\nDo you want to run using default user, password and router IP? (y/n): ").lower().strip()[:1] == "y": sys.exit(1)
+        if not input("\n\nDo you want to run using default user, password and router IP? (y/n): ").lower().strip()[:1] == "y":
+            sys.exit(1)
 
     options = parser.parse_args(args)
     return options
 
+
 def login(session, url, username, password):
     r = session.get(f"{url}")
     # parse HTML
-    h = BeautifulSoup(r.text, "lxml")
-    current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", h.head.text)[1]
-    their_salt = re.search(r".*var mySalt = '(.+)';.*", h.head.text)[1]
-    their_iv = re.search(r".*var myIv = '(.+)';.*", h.head.text)[1]
+    soup = BeautifulSoup(r.text, "lxml")
 
-    salt = os.urandom(8)
-    iv = os.urandom(8)
+    modem = get_firmware_handler(soup)
 
-    salt = bytes.fromhex(their_salt)
-    iv = bytes.fromhex(their_iv)
+    (salt, iv) = modem.get_salt_and_iv()
+
+    current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", soup.head.text)[1]
 
     key = hashlib.pbkdf2_hmac(
         'sha256',
@@ -43,7 +43,8 @@ def login(session, url, username, password):
         iterations=1000,
         dklen=128/8
     )
-    secret = { "Password": password, "Nonce": current_session_id }
+
+    secret = {"Password": password, "Nonce": current_session_id}
     plaintext = bytes(json.dumps(secret).encode("ascii"))
     associated_data = "loginPassword"
 
@@ -52,13 +53,7 @@ def login(session, url, username, password):
     encrypt_data = cipher.encrypt(plaintext)
     encrypt_data += cipher.digest()
 
-    login_data = {
-        'EncryptData': binascii.hexlify(encrypt_data).decode("ascii"),
-        'Name': username,
-        # 'Salt': binascii.hexlify(salt).decode("ascii"),
-        # 'Iv': binascii.hexlify(iv).decode("ascii"),
-        'AuthData': associated_data
-    }
+    login_data = modem.get_login_data(encrypt_data, username, salt, iv, associated_data)
 
     r = session.put(
         f"{url}/php/ajaxSet_Password.php",
@@ -75,12 +70,7 @@ def login(session, url, username, password):
 
     result = json.loads(r.text)
 
-    decCipher = AES.new(key, AES.MODE_CCM, iv)
-    decCipher.update(bytes("nonce".encode()))
-    decryptData = decCipher.decrypt(bytes.fromhex(result['encryptData'])) #TODO ende abschneiden
-
-
-    csrf_nonce = decryptData[:32].decode()
+    csrf_nonce = modem.get_csrf_nonce(result, key, iv)
 
     session.headers.update({
         "X-Requested-With": "XMLHttpRequest",
@@ -99,13 +89,15 @@ def login(session, url, username, password):
 
     r = session.post(f"{url}/php/ajaxSet_Session.php")
 
+
 def _unpad(s):
     return s[:-ord(s[len(s) - 1:])]
 
-def restart(session):
-    restart_request_data = {"RestartReset":"Restart"}
 
-    r2 = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+def restart(session):
+    restart_request_data = {"RestartReset": "Restart"}
+    session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+
 
 if __name__ == "__main__":
     userArguments = getOptions()
@@ -115,7 +107,7 @@ if __name__ == "__main__":
     password = userArguments.password
 
     session = requests.Session()
-    
+
     login(session, url, username, password)
     print("Login successfull")
 
