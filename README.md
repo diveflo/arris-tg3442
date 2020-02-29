@@ -1,6 +1,11 @@
 # arris-tg3442-reboot
 Python tool to restart your Arris TG3442* cable modem/router remotely.
 
+## Supported firmware versions
+Currently, the following firmware versions are supported:
+ * AR01.01.117.01_091718_70.PC20.10
+ * AR01.02.037.03.12.EURO.SIP
+
 ## Requirements
 * beautifulsoup4
 * pycryptodome
