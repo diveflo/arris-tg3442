@@ -26,6 +26,7 @@ You can also use the provided `Dockerfile` to build and run this tool. A pre-bui
  * amd64
  * arm64
  * arm/v7
+ * arm/v6
 
 ## Thanks
 Most of the heavy-lifiting was already done over in the [MUNIN monitoring tool repo](https://github.com/munin-monitoring/contrib/blob/master/plugins/router/arris-tg3442), especially regarding login.
