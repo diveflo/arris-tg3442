@@ -1,0 +1,33 @@
+name: continuous integration
+on:
+  push:
+    
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: prepare buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v3
+        with:
+          buildx-version: latest
+          qemu-version: latest
+      - name: login dockerhub
+        if: success()
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_ACCESSTOKEN }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login --username floriang89 --password-stdin
+      - name: build & push images
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8 \
+            --output "type=image,push=true" \
+            --tag floriang89/arris-tg3442-reboot:latest \
+            --file ./Dockerfile .
+      - name: clear docker config
+        if: always()
+        run: |
+          rm -f ${HOME}/.docker/config.json
