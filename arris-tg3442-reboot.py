@@ -34,7 +34,7 @@ def login(session, url, username, password):
 
     (salt, iv) = modem.get_salt_and_iv()
 
-    current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", soup.head.text)[1]
+    current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", str(soup.head)[1]
 
     key = hashlib.pbkdf2_hmac(
         'sha256',

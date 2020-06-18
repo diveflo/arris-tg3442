@@ -6,7 +6,7 @@ import os
 
 
 def get_firmware_handler(soup: BeautifulSoup):
-    if bool(re.search("01.01.117.01.EURO", soup.head.text)):
+    if bool(str(soup.head).count("01.01.117.01.EURO")):
         print("Auto-detected firmware version 01.01.117.01.EURO")
         return FirmwareMid2018(soup)
     else:
@@ -30,8 +30,8 @@ class Firmware():
 
 class FirmwareEarly2019(Firmware):
     def get_salt_and_iv(self):
-        their_salt = re.search(r".*var mySalt = '(.+)';.*", self.soup.head.text)[1]
-        their_iv = re.search(r".*var myIv = '(.+)';.*", self.soup.head.text)[1]
+        their_salt = re.search(r".*var mySalt = '(.+)';.*", str(self.soup.head))[1]
+        their_iv = re.search(r".*var myIv = '(.+)';.*", str(self.soup.head))[1]
         salt = bytes.fromhex(their_salt)
         iv = bytes.fromhex(their_iv)
 
