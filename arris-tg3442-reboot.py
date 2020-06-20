@@ -36,13 +36,7 @@ def login(session, url, username, password):
 
     current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", str(soup.head))[1]
 
-    key = hashlib.pbkdf2_hmac(
-        'sha256',
-        bytes(password.encode("ascii")),
-        salt,
-        iterations=1000,
-        dklen=128/8
-    )
+    key = hashlib.pbkdf2_hmac('sha256', bytes(password.encode("ascii")), salt, iterations=1000, dklen=128/8)
 
     secret = {"Password": password, "Nonce": current_session_id}
     plaintext = bytes(json.dumps(secret).encode("ascii"))
