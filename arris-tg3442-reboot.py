@@ -49,14 +49,7 @@ def login(session, url, username, password):
 
     login_data = modem.get_login_data(encrypt_data, username, salt, iv, associated_data)
 
-    r = session.put(
-        f"{url}/php/ajaxSet_Password.php",
-        headers={
-            "Content-Type": "application/json",
-            "csrfNonce": "undefined"
-        },
-        data=json.dumps(login_data)
-    )
+    r = modem.login(session, url, login_data)
 
     if not r.ok or json.loads(r.text)['p_status'] == "Fail":
         print("login failure", file=sys.stderr)
