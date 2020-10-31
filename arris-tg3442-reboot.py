@@ -32,7 +32,7 @@ def login(session, url, username, password):
     modem = get_firmware_handler(soup)
 
     (salt, iv) = modem.get_salt_and_iv()
-    key = hashlib.pbkdf2_hmac('sha256', bytes(password.encode("ascii")), salt, iterations=1000, dklen=128/8)
+    key = hashlib.pbkdf2_hmac('sha256', bytes(password.encode("ascii")), salt, iterations=1000, dklen=128//8)
 
     current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", str(soup.head))[1]
     secret = {"Password": password, "Nonce": current_session_id}
