@@ -1,9 +1,10 @@
 from bs4 import BeautifulSoup
-import re
 import binascii
 from Crypto.Cipher import AES
+import json
 import os
-
+import re
+from requests.sessions import Session
 
 def get_firmware_handler(soup: BeautifulSoup):
     if bool(str(soup.head).count("01.01.117.01.EURO")):
@@ -22,6 +23,9 @@ class Firmware():
         pass
 
     def get_login_data(self, encrypt_data: bytes, username: str, salt: str, iv: str, associated_data: str) -> dict:
+        pass
+
+    def login(self, session: Session, url: str, login_data: dict) -> str:
         pass
 
     def get_csrf_nonce(self, login_response, key: bytes, iv: str):
@@ -43,6 +47,16 @@ class FirmwareEarly2019(Firmware):
             'Name': username,
             'AuthData': associated_data
         }
+
+    def login(self, session: Session, url: str, login_data: dict):
+        return session.put(
+            f"{url}/php/ajaxSet_Password.php",
+            headers={
+                "Content-Type": "application/json",
+                "csrfNonce": "undefined"
+            },
+            data=json.dumps(login_data)
+        )
 
     def get_csrf_nonce(self, login_response, key: bytes, iv: str):
         decCipher = AES.new(key, AES.MODE_CCM, iv)
@@ -66,6 +80,16 @@ class FirmwareMid2018(Firmware):
             'Iv': binascii.hexlify(iv).decode("ascii"),
             'AuthData': associated_data
         }
+
+    def login(self, session: Session, url: str, login_data: dict):
+        return session.put(
+            f"{url}/php/ajaxSet_Password.php",
+            headers={
+                "Content-Type": "application/json",
+                "csrfNonce": "undefined"
+            },
+            data=json.dumps(login_data)
+        )
 
     def get_csrf_nonce(self, login_response, key: bytes, iv: str):
         return login_response['nonce']
