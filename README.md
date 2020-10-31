@@ -8,6 +8,8 @@ Currently, the following firmware versions are supported:
 
 * AR01.01.117.01_091718_70.PC20.10
 * AR01.02.037.03.12.EURO.SIP
+* AR01.02.068.10_082720_711.SIP.10
+* AR01.02.068.11_092320_711.PC20.10
 
 ## Requirements
 
@@ -39,3 +41,4 @@ You can also use the provided `Dockerfile` to build and run this tool. A pre-bui
 ## Thanks
 
 Most of the heavy-lifiting was already done over in the [MUNIN monitoring tool repo](https://github.com/munin-monitoring/contrib/blob/master/plugins/router/arris-tg3442), especially regarding login.
+Thank you [debfx](https://github.com/debfx) and [Mershl](https://github.com/Mershl) for enabling support for additional firmwares.
