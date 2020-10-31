@@ -76,14 +76,11 @@ def login(session, url, username, password):
 
     r = session.post(f"{url}/php/ajaxSet_Session.php")
 
+    return modem
+
 
 def _unpad(s):
     return s[:-ord(s[len(s) - 1:])]
-
-
-def restart(session):
-    restart_request_data = {"RestartReset": "Restart"}
-    session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
 
 
 if __name__ == "__main__":
@@ -95,8 +92,8 @@ if __name__ == "__main__":
 
     session = requests.Session()
 
-    login(session, url, username, password)
+    modem = login(session, url, username, password)
     print("Login successfull")
 
     print("Attempting restart - this can take a few minutes.")
-    restart(session)
+    modem.restart(session, url)
