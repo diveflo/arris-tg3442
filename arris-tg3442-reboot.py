@@ -1,5 +1,6 @@
 from firmware import get_firmware_handler
 
+import argparse
 from bs4 import BeautifulSoup
 from Crypto.Cipher import AES
 import hashlib
@@ -7,7 +8,6 @@ import json
 import re
 import requests
 import sys
-import argparse
 
 
 def getOptions(args=sys.argv[1:]):
@@ -27,17 +27,14 @@ def getOptions(args=sys.argv[1:]):
 
 def login(session, url, username, password):
     r = session.get(f"{url}")
-    # parse HTML
     soup = BeautifulSoup(r.text, "lxml")
 
     modem = get_firmware_handler(soup)
 
     (salt, iv) = modem.get_salt_and_iv()
-
-    current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", str(soup.head))[1]
-
     key = hashlib.pbkdf2_hmac('sha256', bytes(password.encode("ascii")), salt, iterations=1000, dklen=128/8)
 
+    current_session_id = re.search(r".*var currentSessionId = '(.+)';.*", str(soup.head))[1]
     secret = {"Password": password, "Nonce": current_session_id}
     plaintext = bytes(json.dumps(secret).encode("ascii"))
     associated_data = "loginPassword"
@@ -77,10 +74,6 @@ def login(session, url, username, password):
     r = session.post(f"{url}/php/ajaxSet_Session.php")
 
     return modem
-
-
-def _unpad(s):
-    return s[:-ord(s[len(s) - 1:])]
 
 
 if __name__ == "__main__":
