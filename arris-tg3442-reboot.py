@@ -27,7 +27,7 @@ def getOptions(args=sys.argv[1:]):
 
 def login(session, url, username, password):
     r = session.get(f"{url}")
-    soup = BeautifulSoup(r.text, "lxml")
+    soup = BeautifulSoup(r.text, "html.parser")
 
     modem = get_firmware_handler(soup)
 
