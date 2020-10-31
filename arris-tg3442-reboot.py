@@ -86,7 +86,7 @@ if __name__ == "__main__":
     session = requests.Session()
 
     modem = login(session, url, username, password)
-    print("Login successfull")
+    print("Login successful")
 
-    print("Attempting restart - this can take a few minutes.")
+    print("Attempting restart - this can take a few minutes")
     modem.restart(session, url)
