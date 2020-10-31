@@ -16,7 +16,6 @@ Currently, the following firmware versions are supported:
 * beautifulsoup4
 * pycryptodome
 * requests
-* lxml
 
 ## Install
 
