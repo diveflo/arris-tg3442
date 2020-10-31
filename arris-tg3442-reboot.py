@@ -90,3 +90,4 @@ if __name__ == "__main__":
 
     print("Attempting restart - this can take a few minutes")
     modem.restart(session, url)
+    print("Restart successful")
