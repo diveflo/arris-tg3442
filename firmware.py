@@ -78,7 +78,9 @@ class FirmwareMid2020(Firmware):
 
     def restart(self, session: Session, url: str):
         restart_request_data = {"RestartReset": "Restart"}
-        session.post(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        r = session.post(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not r.ok:
+            r.raise_for_status()
 
 class FirmwareEarly2019(Firmware):
     def get_salt_and_iv(self):
@@ -115,7 +117,9 @@ class FirmwareEarly2019(Firmware):
 
     def restart(self, session: Session, url: str):
         restart_request_data = {"RestartReset": "Restart"}
-        session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        r = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not r.ok:
+            r.raise_for_status()
 
 
 class FirmwareMid2018(Firmware):
@@ -148,4 +152,6 @@ class FirmwareMid2018(Firmware):
 
     def restart(self, session: Session, url: str):
         restart_request_data = {"RestartReset": "Restart"}
-        session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        r = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not r.ok:
+            r.raise_for_status()
