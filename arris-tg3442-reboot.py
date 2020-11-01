@@ -88,6 +88,6 @@ if __name__ == "__main__":
     modem = login(session, url, username, password)
     print("Login successful")
 
-    print("Attempting restart - this can take a few minutes")
+    print("Attempting restart")
     modem.restart(session, url)
-    print("Restart successful")
+    print("Restart successfully triggered - this can take a few minutes")
