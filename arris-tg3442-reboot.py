@@ -10,7 +10,7 @@ import requests
 import sys
 
 
-def getOptions(args=sys.argv[1:]):
+def get_options(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Reboot Arris TG3442* cable router remotely.")
     parser.add_argument("-u", "--username", help="router login username", action='store', dest='username', default='admin')
     parser.add_argument("-p", "--password", help="router login password", action='store', dest='password', default='password')
@@ -26,8 +26,8 @@ def getOptions(args=sys.argv[1:]):
 
 
 def login(session, url, username, password):
-    r = session.get(f"{url}")
-    soup = BeautifulSoup(r.text, "html.parser")
+    response = session.get(f"{url}")
+    soup = BeautifulSoup(response.text, "html.parser")
 
     modem = get_firmware_handler(soup)
 
@@ -41,18 +41,18 @@ def login(session, url, username, password):
 
     cipher = AES.new(key, AES.MODE_CCM, iv)
     cipher.update(bytes(associated_data.encode("ascii")))
-    encrypt_data = cipher.encrypt(plaintext)
-    encrypt_data += cipher.digest()
+    encrypted_data = cipher.encrypt(plaintext)
+    encrypted_data += cipher.digest()
 
-    login_data = modem.get_login_data(encrypt_data, username, salt, iv, associated_data)
+    login_data = modem.get_login_data(encrypted_data, username, salt, iv, associated_data)
 
-    r = modem.login(session, url, login_data)
+    response = modem.login(session, url, login_data)
 
-    if not r.ok or json.loads(r.text)['p_status'] == "Fail":
+    if not response.ok or json.loads(response.text)['p_status'] == "Fail":
         print("login failure", file=sys.stderr)
         exit(-1)
 
-    result = json.loads(r.text)
+    result = json.loads(response.text)
 
     csrf_nonce = modem.get_csrf_nonce(result, key, iv)
 
@@ -71,13 +71,13 @@ def login(session, url, username, password):
         "hbmdlZCI6IllFUyIgfQ=="
     )
 
-    r = session.post(f"{url}/php/ajaxSet_Session.php")
+    response = session.post(f"{url}/php/ajaxSet_Session.php")
 
     return modem
 
 
 if __name__ == "__main__":
-    userArguments = getOptions()
+    userArguments = get_options()
 
     url = userArguments.url
     username = userArguments.username
