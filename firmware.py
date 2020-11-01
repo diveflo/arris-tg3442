@@ -6,6 +6,7 @@ import os
 import re
 from requests.sessions import Session
 
+
 def get_firmware_handler(soup: BeautifulSoup):
     if bool(str(soup.head).count("01.01.117.01.EURO")):
         print("Auto-detected firmware version 01.01.117.01.EURO")
@@ -30,7 +31,7 @@ class Firmware():
     def get_salt_and_iv(self) -> tuple:
         pass
 
-    def get_login_data(self, encrypt_data: bytes, username: str, salt: str, iv: str, associated_data: str) -> dict:
+    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str) -> dict:
         pass
 
     def login(self, session: Session, url: str, login_data: dict) -> str:
@@ -52,9 +53,9 @@ class FirmwareMid2020(Firmware):
 
         return (salt, iv)
 
-    def get_login_data(self, encrypt_data: bytes, username: str, salt: str, iv: str, associated_data: str):
+    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str):
         return {
-            'EncryptData': binascii.hexlify(encrypt_data).decode("ascii"),
+            'EncryptData': binascii.hexlify(encrypted_data).decode("ascii"),
             'Name': username,
             'AuthData': associated_data
         }
@@ -73,17 +74,18 @@ class FirmwareMid2020(Firmware):
         if (login_response["p_status"] == "Lockout"):
            raise Exception(f"Login failed. Lockout reported. Wait {login_response['p_waitTime']} minute/s.")
 
-        decCipher = AES.new(key, AES.MODE_CCM, iv)
-        decCipher.update(bytes("nonce".encode()))
-        decryptData = decCipher.decrypt(bytes.fromhex(login_response['encryptData']))
+        cipher = AES.new(key, AES.MODE_CCM, iv)
+        cipher.update(bytes("nonce".encode()))
+        decrypted_data = cipher.decrypt(bytes.fromhex(login_response['encryptData']))
 
-        return decryptData[:32].decode()
+        return decrypted_data[:32].decode()
 
     def restart(self, session: Session, url: str):
         restart_request_data = {"RestartReset": "Restart"}
-        r = session.post(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
-        if not r.ok:
-            r.raise_for_status()
+        response = session.post(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not response.ok:
+            response.raise_for_status()
+
 
 class FirmwareEarly2019(Firmware):
     def get_salt_and_iv(self):
@@ -94,9 +96,9 @@ class FirmwareEarly2019(Firmware):
 
         return (salt, iv)
 
-    def get_login_data(self, encrypt_data: bytes, username: str, salt: str, iv: str, associated_data: str):
+    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str):
         return {
-            'EncryptData': binascii.hexlify(encrypt_data).decode("ascii"),
+            'EncryptData': binascii.hexlify(encrypted_data).decode("ascii"),
             'Name': username,
             'AuthData': associated_data
         }
@@ -112,17 +114,17 @@ class FirmwareEarly2019(Firmware):
         )
 
     def get_csrf_nonce(self, login_response, key: bytes, iv: str):
-        decCipher = AES.new(key, AES.MODE_CCM, iv)
-        decCipher.update(bytes("nonce".encode()))
-        decryptData = decCipher.decrypt(bytes.fromhex(login_response['encryptData']))
+        cipher = AES.new(key, AES.MODE_CCM, iv)
+        cipher.update(bytes("nonce".encode()))
+        decrypted_data = cipher.decrypt(bytes.fromhex(login_response['encryptData']))
 
-        return decryptData[:32].decode()
+        return decrypted_data[:32].decode()
 
     def restart(self, session: Session, url: str):
         restart_request_data = {"RestartReset": "Restart"}
-        r = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
-        if not r.ok:
-            r.raise_for_status()
+        response = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not response.ok:
+            response.raise_for_status()
 
 
 class FirmwareMid2018(Firmware):
@@ -131,9 +133,9 @@ class FirmwareMid2018(Firmware):
         iv = os.urandom(8)
         return (salt, iv)
 
-    def get_login_data(self, encrypt_data: bytes, username: str, salt: str, iv: str, associated_data: str):
+    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str):
         return {
-            'EncryptData': binascii.hexlify(encrypt_data).decode("ascii"),
+            'EncryptData': binascii.hexlify(encrypted_data).decode("ascii"),
             'Name': username,
             'Salt': binascii.hexlify(salt).decode("ascii"),
             'Iv': binascii.hexlify(iv).decode("ascii"),
@@ -155,6 +157,6 @@ class FirmwareMid2018(Firmware):
 
     def restart(self, session: Session, url: str):
         restart_request_data = {"RestartReset": "Restart"}
-        r = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
-        if not r.ok:
-            r.raise_for_status()
+        response = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not response.ok:
+            response.raise_for_status()
