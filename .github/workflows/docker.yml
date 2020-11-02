@@ -19,10 +19,8 @@ jobs:
           qemu-version: latest
       - name: login dockerhub
         if: success()
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_ACCESSTOKEN }}
         run: |
-          echo "${DOCKER_PASSWORD}" | docker login --username floriang89 --password-stdin
+          echo "${{ secrets.DOCKER_ACCESSTOKEN }}" | docker login --username floriang89 --password-stdin
       - name: build & push images
         run: |
           docker buildx build \
