@@ -1,7 +1,7 @@
 name: continuous integration
 on:
   push:
-    
+
 jobs:
   docker:
     runs-on: ubuntu-latest
