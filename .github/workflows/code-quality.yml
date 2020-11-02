@@ -2,11 +2,11 @@ name: "code quality"
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
   pull_request:
-    branches: [master]
-  schedule:
-    - cron: "0 3 * * 2"
+    branches:
+      - master
 
 jobs:
   code-ql:
@@ -24,7 +24,8 @@ jobs:
         with:
           fetch-depth: 2
 
-      - run: git checkout HEAD^2
+      - name: checkout head of pull request
+        run: git checkout HEAD^2
         if: ${{ github.event_name == 'pull_request' }}
 
       - name: initialize CodeQL
