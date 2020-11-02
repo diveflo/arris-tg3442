@@ -21,13 +21,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: build & push images
-        run: |
-          docker buildx build \
-            --platform linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8 \
-            --output "type=image,push=true" \
-            --tag floriang89/arris-tg3442-reboot:latest \
-            --file ./Dockerfile .
-      - name: clear docker config
-        if: always()
-        run: |
-          rm -f ${HOME}/.docker/config.json
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8
+          push: true
+          tags: user/app:latest
