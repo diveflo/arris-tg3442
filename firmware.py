@@ -90,6 +90,13 @@ class FirmwareMid2020(Firmware):
         if not response.ok:
             response.raise_for_status()
 
+    def get_phone_log(self, session: Session, url: str):
+        response = session.get(url + "/php/phone_call_log_data.php?_n=73995&{%22PhoneLogRecord%22:{}}")
+        if not response.ok:
+            response.raise_for_status()
+        else:
+            return json.loads(response.content)
+
 
 class FirmwareMid2021(FirmwareMid2020):
     pass

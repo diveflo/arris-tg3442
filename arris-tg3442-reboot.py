@@ -4,6 +4,8 @@ import json
 import re
 import sys
 
+from datetime import timedelta, datetime
+
 import requests
 from bs4 import BeautifulSoup
 from Crypto.Cipher import AES
@@ -16,6 +18,7 @@ def get_options(args=sys.argv[1:]):
     parser.add_argument("-u", "--username", help="router login username", action='store', dest='username', default='admin')
     parser.add_argument("-p", "--password", help="router login password", action='store', dest='password', default='password')
     parser.add_argument("-t", "--target", help="router IP address/url (prepended by http)", action='store', dest='url', default='http://192.168.100.1')
+    parser.add_argument("action", nargs='?', choices=('reboot', 'phone-log'), help="the action to send (default to reboot)", action="store", default='reboot')
 
     if (len(args) == 0):
         parser.print_help()
@@ -77,6 +80,27 @@ def login(session, url, username, password):
     return modem
 
 
+def format_phone_log_entry(entry):
+    call_type = entry["CallType"]
+    date = entry["Date"]
+    today = datetime.today()
+    if date == "PAGE_CALL_LOG_TABLE_TODAY":
+        date = today.strftime("%Y-%m-%d")
+    elif date == "PAGE_CALL_LOG_TABLE_YESTERDAY":
+        date = (today + timedelta(days=-1)).strftime("%Y-%m-%d")
+    time = entry["Time"]
+    number = entry["ExternalNumber"]
+    duration = entry["Duration"]
+    msg = f"{call_type} Call on {date} {time} from {number}"
+    if duration:
+        msg += f" for {duration} minutes"
+    return msg
+
+
+def format_phone_log(log):
+    return "\n".join(map(format_phone_log_entry, list(reversed(log))))
+
+
 if __name__ == "__main__":
     userArguments = get_options()
 
@@ -89,6 +113,14 @@ if __name__ == "__main__":
     modem = login(session, url, username, password)
     print("Login successful")
 
-    print("Attempting restart")
-    modem.restart(session, url)
-    print("Restart successfully triggered - this can take a few minutes")
+    if userArguments.action == "reboot":
+        print("Attempting restart")
+        modem.restart(session, url)
+        print("Restart successfully triggered - this can take a few minutes")
+    elif userArguments.action == "phone-log":
+        print("Retrieving phone log since last reboot")
+        log = modem.get_phone_log(session, url)
+        if len(log) == 0 or "PhoneLogRecord" not in log:
+            print("No entries found")
+        else:
+            print(format_phone_log(modem.get_phone_log(session, url)["PhoneLogRecord"]))
