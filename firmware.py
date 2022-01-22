@@ -24,6 +24,9 @@ def get_firmware_handler(soup: BeautifulSoup):
     elif bool(str(soup.head).count("01.02.068.13.EURO.PC20")):
         print("Auto-detected firmware version 01.02.068.13.EURO.PC20")
         return FirmwareMid2021(soup)
+    elif bool(str(soup.head).count("01.04.046.07.EURO.PC20")):
+        print("Auto-detected firmware version 01.04.046.07.EURO.PC20")
+        return FirmwareEnd2021(soup)
     else:
         raise NotImplementedError("Did not detect any known firmware version - please open a GitHub issue with your firmware version")
 
@@ -92,6 +95,10 @@ class FirmwareMid2020(Firmware):
 
 
 class FirmwareMid2021(FirmwareMid2020):
+    pass
+
+
+class FirmwareEnd2021(FirmwareMid2021):
     pass
 
 
