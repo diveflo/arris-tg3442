@@ -120,7 +120,7 @@ if __name__ == "__main__":
     elif userArguments.action == "phone-log":
         print("Retrieving phone log since last reboot")
         log = modem.get_phone_log(session, url)
-        if len(log) == 0 or "PhoneLogRecord" not in log:
+        if "PhoneLogRecord" not in log or len(log["PhoneLogRecord"]) == 0:
             print("No entries found")
         else:
-            print(format_phone_log(modem.get_phone_log(session, url)["PhoneLogRecord"]))
+            print(format_phone_log(log["PhoneLogRecord"]))
