@@ -3,8 +3,7 @@ import hashlib
 import json
 import re
 import sys
-
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 
 import requests
 from bs4 import BeautifulSoup
