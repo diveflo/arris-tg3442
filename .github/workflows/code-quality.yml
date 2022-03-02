@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: checkout repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 2
 
@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: checkout repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
 
       - name: sort python imports with isort
         uses: olance/isort-action@v1.1.0
