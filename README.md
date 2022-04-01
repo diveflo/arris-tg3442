@@ -12,6 +12,7 @@ Currently, the following firmware versions are supported:
 * AR01.02.068.11_092320_711.PC20.10
 * AR01.02.068.13_052421_711.PC20.10
 * AR01.04.046.07_072921_7244.PC20.10.X1
+* AR01.04.046.12_120921_7244.PC20.10.X1
 
 ## Requirements
 
