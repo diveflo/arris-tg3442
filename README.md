@@ -1,4 +1,4 @@
-# arris-tg3442-reboot
+# arris-tg3442
 
 Python tool to restart and retrieve the phone log of your Arris TG3442* cable modem/router remotely.
 
