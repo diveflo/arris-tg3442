@@ -49,4 +49,4 @@ You can also use the provided `Dockerfile` to build and run this tool. A pre-bui
 ## Thanks
 
 Most of the heavy-lifting was already done over in the [MUNIN monitoring tool repo](https://github.com/munin-monitoring/contrib/blob/master/plugins/router/arris-tg3442), especially regarding login.
-Thank you [debfx](https://github.com/debfx) and [Mershl](https://github.com/Mershl) for enabling support for additional firmwares.
+Thank you [debfx](https://github.com/debfx), [Mershl](https://github.com/Mershl) and [schelmo](https://github.com/schelmo) for enabling support for additional firmwares.
