@@ -9,32 +9,26 @@ from requests.sessions import Session
 
 
 def get_firmware_handler(soup: BeautifulSoup):
-    if bool(str(soup.head).count("01.01.117.01.EURO")):
-        print("Auto-detected firmware version 01.01.117.01.EURO")
-        return FirmwareMid2018(soup)
-    elif bool(str(soup.head).count("01.02.037.03.12.EURO.SIP")):
-        print("Auto-detected firmware version 01.02.037.03.12.EURO.SIP")
-        return FirmwareEarly2019(soup)
-    elif bool(str(soup.head).count("01.02.068.10.EURO.SIP")):
-        print("Auto-detected firmware version 01.02.068.10.EURO.SIP")
-        return FirmwareMid2020(soup)
-    elif bool(str(soup.head).count("01.02.068.11.EURO.PC20")):
-        print("Auto-detected firmware version 01.02.068.11.EURO.PC20")
-        return FirmwareMid2020(soup)
-    elif bool(str(soup.head).count("01.02.068.13.EURO.PC20")):
-        print("Auto-detected firmware version 01.02.068.13.EURO.PC20")
-        return FirmwareMid2021(soup)
-    elif bool(str(soup.head).count("01.04.046.07.EURO.PC20")):
-        print("Auto-detected firmware version 01.04.046.07.EURO.PC20")
-        return FirmwareEnd2021(soup)
-    elif bool(str(soup.head).count("01.04.046.12.EURO.PC20")):
-        print("Auto-detected firmware version 01.04.046.12.EURO.PC20")
-        return FirmwareEnd2021(soup)
-    elif bool(str(soup.head).count("01.04.046.15.EURO.PC20")):
-        print("Auto-detected firmware version 01.04.046.15.EURO.PC20")
-        return FirmwareEarly2022(soup)
-    else:
-        raise NotImplementedError("Did not detect any known firmware version - please open a GitHub issue with your firmware version")
+    firmware_versions = {
+        "01.01.117.01.EURO": FirmwareMid2018,
+        "01.02.037.03.12.EURO.SIP": FirmwareEarly2019,
+        "01.02.068.10.EURO.SIP": FirmwareMid2020,
+        "01.02.068.11.EURO.PC20": FirmwareMid2020,
+        "01.02.068.13.EURO.PC20": FirmwareMid2021,
+        "01.04.046.07.EURO.PC20": FirmwareEnd2021,
+        "01.04.046.12.EURO.PC20": FirmwareEnd2021,
+        "01.04.046.15.EURO.PC20": FirmwareEarly2022,
+        "01.04.046.17.EURO.PC20": FirmwareMid2022,
+        "01.04.046.25.EURO.PC20": FirmwareEnd2022
+    }
+
+    firmware_text = str(soup.head)
+    for version, firmware_class in firmware_versions.items():
+        if re.search(version, firmware_text):
+            print(f"Auto-detected firmware version {version}")
+            return firmware_class(soup)
+
+    raise NotImplementedError("Did not detect any known firmware version - please open a GitHub issue with your firmware version")
 
 
 class Firmware():
@@ -116,6 +110,12 @@ class FirmwareEnd2021(FirmwareMid2021):
 
 
 class FirmwareEarly2022(FirmwareEnd2021):
+    pass
+
+class FirmwareMid2022(FirmwareEarly2022):
+    pass
+
+class FirmwareEnd2022(FirmwareMid2022):
     pass
 
 
