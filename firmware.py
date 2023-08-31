@@ -51,6 +51,81 @@ class Firmware():
         pass
 
 
+class FirmwareMid2018(Firmware):
+    def get_salt_and_iv(self):
+        salt = os.urandom(8)
+        iv = os.urandom(8)
+        return (salt, iv)
+
+    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str):
+        return {
+            'EncryptData': binascii.hexlify(encrypted_data).decode("ascii"),
+            'Name': username,
+            'Salt': binascii.hexlify(salt).decode("ascii"),
+            'Iv': binascii.hexlify(iv).decode("ascii"),
+            'AuthData': associated_data
+        }
+
+    def login(self, session: Session, url: str, login_data: dict):
+        return session.put(
+            f"{url}/php/ajaxSet_Password.php",
+            headers={
+                "Content-Type": "application/json",
+                "csrfNonce": "undefined"
+            },
+            data=json.dumps(login_data)
+        )
+
+    def get_csrf_nonce(self, login_response, key: bytes, iv: str):
+        return login_response['nonce']
+
+    def restart(self, session: Session, url: str):
+        restart_request_data = {"RestartReset": "Restart"}
+        response = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not response.ok:
+            response.raise_for_status()
+
+
+class FirmwareEarly2019(Firmware):
+    def get_salt_and_iv(self):
+        their_salt = re.search(r".*var mySalt = '(.+)';.*", str(self.soup.head))[1]
+        their_iv = re.search(r".*var myIv = '(.+)';.*", str(self.soup.head))[1]
+        salt = bytes.fromhex(their_salt)
+        iv = bytes.fromhex(their_iv)
+
+        return (salt, iv)
+
+    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str):
+        return {
+            'EncryptData': binascii.hexlify(encrypted_data).decode("ascii"),
+            'Name': username,
+            'AuthData': associated_data
+        }
+
+    def login(self, session: Session, url: str, login_data: dict):
+        return session.put(
+            f"{url}/php/ajaxSet_Password.php",
+            headers={
+                "Content-Type": "application/json",
+                "csrfNonce": "undefined"
+            },
+            data=json.dumps(login_data)
+        )
+
+    def get_csrf_nonce(self, login_response, key: bytes, iv: str):
+        cipher = AES.new(key, AES.MODE_CCM, iv)
+        cipher.update(bytes("nonce".encode()))
+        decrypted_data = cipher.decrypt(bytes.fromhex(login_response['encryptData']))
+
+        return decrypted_data[:32].decode()
+
+    def restart(self, session: Session, url: str):
+        restart_request_data = {"RestartReset": "Restart"}
+        response = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
+        if not response.ok:
+            response.raise_for_status()
+
+
 class FirmwareMid2020(Firmware):
     def get_salt_and_iv(self):
         their_salt = re.search(r".*var mySalt = '(.+)';.*", str(self.soup.head))[1]
@@ -112,83 +187,10 @@ class FirmwareEnd2021(FirmwareMid2021):
 class FirmwareEarly2022(FirmwareEnd2021):
     pass
 
+
 class FirmwareMid2022(FirmwareEarly2022):
     pass
 
+
 class FirmwareEnd2022(FirmwareMid2022):
     pass
-
-
-class FirmwareEarly2019(Firmware):
-    def get_salt_and_iv(self):
-        their_salt = re.search(r".*var mySalt = '(.+)';.*", str(self.soup.head))[1]
-        their_iv = re.search(r".*var myIv = '(.+)';.*", str(self.soup.head))[1]
-        salt = bytes.fromhex(their_salt)
-        iv = bytes.fromhex(their_iv)
-
-        return (salt, iv)
-
-    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str):
-        return {
-            'EncryptData': binascii.hexlify(encrypted_data).decode("ascii"),
-            'Name': username,
-            'AuthData': associated_data
-        }
-
-    def login(self, session: Session, url: str, login_data: dict):
-        return session.put(
-            f"{url}/php/ajaxSet_Password.php",
-            headers={
-                "Content-Type": "application/json",
-                "csrfNonce": "undefined"
-            },
-            data=json.dumps(login_data)
-        )
-
-    def get_csrf_nonce(self, login_response, key: bytes, iv: str):
-        cipher = AES.new(key, AES.MODE_CCM, iv)
-        cipher.update(bytes("nonce".encode()))
-        decrypted_data = cipher.decrypt(bytes.fromhex(login_response['encryptData']))
-
-        return decrypted_data[:32].decode()
-
-    def restart(self, session: Session, url: str):
-        restart_request_data = {"RestartReset": "Restart"}
-        response = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
-        if not response.ok:
-            response.raise_for_status()
-
-
-class FirmwareMid2018(Firmware):
-    def get_salt_and_iv(self):
-        salt = os.urandom(8)
-        iv = os.urandom(8)
-        return (salt, iv)
-
-    def get_login_data(self, encrypted_data: bytes, username: str, salt: str, iv: str, associated_data: str):
-        return {
-            'EncryptData': binascii.hexlify(encrypted_data).decode("ascii"),
-            'Name': username,
-            'Salt': binascii.hexlify(salt).decode("ascii"),
-            'Iv': binascii.hexlify(iv).decode("ascii"),
-            'AuthData': associated_data
-        }
-
-    def login(self, session: Session, url: str, login_data: dict):
-        return session.put(
-            f"{url}/php/ajaxSet_Password.php",
-            headers={
-                "Content-Type": "application/json",
-                "csrfNonce": "undefined"
-            },
-            data=json.dumps(login_data)
-        )
-
-    def get_csrf_nonce(self, login_response, key: bytes, iv: str):
-        return login_response['nonce']
-
-    def restart(self, session: Session, url: str):
-        restart_request_data = {"RestartReset": "Restart"}
-        response = session.put(f"{url}/php/ajaxSet_status_restart.php", data=json.dumps(restart_request_data))
-        if not response.ok:
-            response.raise_for_status()
