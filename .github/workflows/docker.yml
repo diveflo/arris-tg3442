@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup platform emulator
         uses: docker/setup-qemu-action@v2
       - name: setup multi-arch docker build
