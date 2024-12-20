@@ -19,7 +19,8 @@ def get_firmware_handler(soup: BeautifulSoup):
         "01.04.046.12.EURO.PC20": FirmwareEnd2021,
         "01.04.046.15.EURO.PC20": FirmwareEarly2022,
         "01.04.046.17.EURO.PC20": FirmwareMid2022,
-        "01.04.046.25.EURO.PC20": FirmwareEnd2022
+        "01.04.046.25.EURO.PC20": FirmwareEnd2022,
+        "01.04.137.08.EURO.PC20": FirmwareEnd2024
     }
 
     firmware_text = str(soup.head)
@@ -193,4 +194,8 @@ class FirmwareMid2022(FirmwareEarly2022):
 
 
 class FirmwareEnd2022(FirmwareMid2022):
+    pass
+
+
+class FirmwareEnd2024(FirmwareEnd2022):
     pass
