@@ -16,6 +16,7 @@ Currently, the following firmware versions are supported:
 * 01.04.046.15.EURO.PC20
 * 01.04.046.17.EURO.PC20
 * 01.04.046.25.EURO.PC20
+* 01.04.137.08.EURO.PC20
 
 ## Requirements
 
