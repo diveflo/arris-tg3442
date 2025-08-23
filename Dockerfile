@@ -7,5 +7,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT [ "python", "arris-tg3442-reboot.py" ]
+ENTRYPOINT [ "python", "arris_tg3442_reboot.py" ]
 CMD ["--help"]

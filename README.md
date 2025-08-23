@@ -30,14 +30,14 @@ Currently, the following firmware versions are supported:
 
 ## Run
 
-`python3 arris-tg3442-reboot.py`
+`python3 arris_tg3442_reboot.py`
 
 This will use **default** username, password and router IP.
 Use `--help` to learn how to use non-default values.
 
 ### To retrieve phone log
 
-`python3 arris-tg3442-reboot.py phone-log`
+`python3 arris_tg3442_reboot.py phone-log`
 
 Note: phone log isn't persistent and is empty after a restart of the modem
 
